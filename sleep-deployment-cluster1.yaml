@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sleep-cluster1
+  namespace: multi-cluster
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sleep-cluster1
+  namespace: multi-cluster
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sleep-cluster1
+  template:
+    metadata:
+      labels:
+        app: sleep-cluster1
+    spec:
+      terminationGracePeriodSeconds: 0
+      serviceAccountName: sleep-cluster1
+      containers:
+      - name: sleep-cluster1
+        image: curlimages/curl
+        command: ["/bin/sleep", "infinity"]
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - mountPath: /etc/sleep/tls
+          name: secret-volume
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: sleep-secret
+          optional: true
